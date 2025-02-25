@@ -4,7 +4,11 @@ import 'package:pharmacy_flutter/screens/login_screen.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.token, this.user, this.userRole});
+
+  final dynamic userRole;
+  final Map<String, dynamic>? user;
+  final String? token;
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -13,7 +17,13 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   void _navigateToAddMedicinePage() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (ctx) => AddMeditionScreen()));
+        context,
+        MaterialPageRoute(
+            builder: (ctx) => AddMeditionScreen(
+                  user: widget.user,
+                  token: widget.token,
+                  userRole: widget.userRole,
+                )));
   }
 
   void _logout() {
@@ -67,9 +77,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: const Color.fromARGB(55, 255, 255, 255),
                       padding: EdgeInsets.symmetric(horizontal: 5),
                       child: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Placeholder(),
-                      ),
+                          padding: EdgeInsets.all(10),
+                          child: Center(
+                            child: Image.asset('assets/pharmacy_logo.png'),
+                          )),
                     ),
                   ),
                 ],

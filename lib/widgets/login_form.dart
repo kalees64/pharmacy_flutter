@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/screens/role_selection_screen.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -19,13 +23,58 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      // Perform login action
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Logging in as: ${_usernameController.text}')),
-      );
+  void _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
     }
+
+    final apiUrl = Uri.parse('http://localhost:3000/api/v1/auth/login');
+
+    dynamic data = json.encode({
+      'username': _usernameController.text,
+      'password': _passwordController.text
+    });
+
+    print("--Login Data : $data");
+
+    try {
+      final response = await http.post(
+        apiUrl,
+        headers: {'Content-Type': 'application/json'},
+        body: data,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Response data: $data');
+        // print('User Token: ${data['token']}');
+
+        // final localStorage = await SharedPreferences.getInstance();
+        // await localStorage.setString('user', json.encode(data));
+        // await localStorage.setString('token', data['token']);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RoleSelectionScreen(
+              user: data,
+              token: data['token'],
+            ),
+          ),
+        );
+
+        _formKey.currentState!.reset();
+      } else {
+        print('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+
+    // Perform login action
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('Logging in as: ${_usernameController.text}')),
+    // );
   }
 
   @override

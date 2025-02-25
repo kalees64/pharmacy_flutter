@@ -4,9 +4,14 @@ import 'dart:ui' as ui;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
+import 'package:http/http.dart' as http;
 
 class AddMedicineForm extends StatefulWidget {
-  const AddMedicineForm({super.key});
+  const AddMedicineForm({super.key, this.token, this.user, this.userRole});
+
+  final dynamic userRole;
+  final Map<String, dynamic>? user;
+  final String? token;
 
   @override
   State<AddMedicineForm> createState() => _AddMedicineFormState();
@@ -84,6 +89,13 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     'mg/kg', // Weight-based dosing (e.g., per kg of body weight)
     'mcg/kg', // Microgram per kilogram
   ];
+
+  @override
+  void initState() {
+    print("User Token : ${widget.token}");
+    // TODO: implement initState
+    super.initState();
+  }
 
   void _calculateTotalCost() {
     final receivedQuantity =
@@ -166,7 +178,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     );
   }
 
-  Map<String, dynamic> generateMedicationPayload() {
+  Map<String, dynamic> payload() {
     return {
       "medicineName": _formData['medicineName'],
       "manufacturerName": _formData['manufacturer'],
@@ -229,7 +241,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      final newMedicine = generateMedicationPayload();
+      final newMedicine = payload();
       final jsonData = jsonEncode(newMedicine);
 
       try {
@@ -260,6 +272,25 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
         print('--Medicine data: $newMedicine');
 
+        final apiUrl = Uri.parse('http://localhost:3000/api/v1/medicines');
+
+        final jsonEncodedMedicineData = json.encode(newMedicine);
+
+        try {
+          final res = await http.post(apiUrl,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ${widget.token}',
+              },
+              body: jsonEncodedMedicineData);
+
+          final resData = jsonDecode(res.body);
+
+          print('Response Data: $resData');
+        } catch (e) {
+          print('Error add medicine : $e');
+        }
+
 // setState(() {
         //   _formData.clear();
         // });
@@ -284,10 +315,14 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               h2("1. Basic Details"),
-              _buildTextField('Medicine Name', 'medicineName', true),
-              _buildTextField('Manufacturer', 'manufacturer', true),
-              _buildTextField('Batch No', 'batchNo', true),
-              _buildTextField('Usage Indications', 'usageIndications', true),
+              _buildTextField('Medicine Name', 'medicineName', true,
+                  keyBoardType: TextInputType.text),
+              _buildTextField('Manufacturer', 'manufacturer', true,
+                  keyBoardType: TextInputType.text),
+              _buildTextField('Batch No', 'batchNo', true,
+                  keyBoardType: TextInputType.text),
+              _buildTextField('Usage Indications', 'usageIndications', true,
+                  keyBoardType: TextInputType.text),
               _buildDropdown('Dosage Form', 'dosageForm', dosageForms, true),
               _buildDropdown('Unit of Measurement', 'unitOfMeasurement',
                   unitMeasurements, true),
@@ -296,6 +331,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
               h2(("2. Compositions")),
               TextFormField(
                 controller: _activeIngredientController,
+                keyboardType: TextInputType.text,
                 decoration: const InputDecoration(
                   labelText: 'Active Ingredient',
                   border: OutlineInputBorder(),
@@ -303,6 +339,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
               ),
               TextFormField(
                 controller: _strengthController,
+                keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Strength',
                   border: OutlineInputBorder(),
@@ -336,37 +373,40 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
               const SizedBox(height: 20),
 
               h2(("3. Supply And Purchase Details")),
-              _buildTextField('Supplier Name', 'supplierName', true),
-              _buildTextField('Invoice No', 'invoiceNo', true),
+              _buildTextField('Supplier Name', 'supplierName', true,
+                  keyBoardType: TextInputType.text),
+              _buildTextField('Invoice No', 'invoiceNo', true,
+                  keyBoardType: TextInputType.text),
               _buildDatePicker('Purchase Date', 'purchaseDate', true),
+              _buildTextField('Received Quantity', 'receivedQuantity', true,
+                  onChanged: (value) => _calculateTotalCost(),
+                  keyBoardType: TextInputType.number),
               _buildTextField(
-                'Received Quantity',
-                'receivedQuantity',
-                true,
-                onChanged: (value) => _calculateTotalCost(),
-              ),
-              _buildTextField(
-                'Purchase Price per Unit',
-                'purchasePricePerUnit',
-                true,
-                onChanged: (value) => _calculateTotalCost(),
-              ),
+                  'Purchase Price per Unit', 'purchasePricePerUnit', true,
+                  onChanged: (value) => _calculateTotalCost(),
+                  keyBoardType: TextInputType.number),
               // _buildTextField('Total Purchase Cost', 'totalPurchaseCost', true,
               //     enabled: false),
               const SizedBox(height: 20),
 
               h2(("4. Stock And Invertory Details")),
-              _buildTextField('Stock Location', 'stockLocation', true),
+              _buildTextField('Stock Location', 'stockLocation', true,
+                  keyBoardType: TextInputType.text),
               _buildTextField(
-                  'Current Stock Quantity', 'currentStockQuantity', true),
-              _buildTextField('Min Stock Level', 'minStockLevel', true),
-              _buildTextField('Max Stock Level', 'maxStockLevel', true),
+                  'Current Stock Quantity', 'currentStockQuantity', true,
+                  keyBoardType: TextInputType.number),
+              _buildTextField('Min Stock Level', 'minStockLevel', true,
+                  keyBoardType: TextInputType.number),
+              _buildTextField('Max Stock Level', 'maxStockLevel', true,
+                  keyBoardType: TextInputType.number),
               const SizedBox(height: 20),
 
               h2(("5. Regulatory Information")),
-              _buildTextField('Drug Licence Number', 'drugLicenceNumber', true),
+              _buildTextField('Drug Licence Number', 'drugLicenceNumber', true,
+                  keyBoardType: TextInputType.text),
               const SizedBox(height: 10),
-              _buildTextField('Schedule Category', 'scheduleCategory', true),
+              _buildTextField('Schedule Category', 'scheduleCategory', true,
+                  keyBoardType: TextInputType.text),
               const SizedBox(height: 10),
               _buildCheckbox('Prescription Required', 'prescriptionRequired'),
               const SizedBox(height: 20),
@@ -374,18 +414,22 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
               h2(("6. Expiry And Storage Information")),
               _buildDatePicker('Manufacture Date', 'manufactureDate', true),
               _buildDatePicker('Expiry Date', 'expiryDate', true),
-              _buildTextField('Storage Conditions', 'storageConditions', true),
+              _buildTextField('Storage Conditions', 'storageConditions', true,
+                  keyBoardType: TextInputType.text),
               const SizedBox(height: 20),
 
               h2(("7. Sales And Pricing Details")),
               _buildTextField(
-                  'Selling Price Per Unit', 'sellingPricePerUnit', true),
-              _buildTextField('Discount', 'discount', true),
+                  'Selling Price Per Unit', 'sellingPricePerUnit', true,
+                  keyBoardType: TextInputType.number),
+              _buildTextField('Discount', 'discount', true,
+                  keyBoardType: TextInputType.number),
               const SizedBox(height: 20),
 
               h2(("8. Tax Details")),
               TextFormField(
                 controller: _taxTypeController,
+                keyboardType: TextInputType.text,
                 decoration: const InputDecoration(
                   labelText: 'Tax Type',
                   border: OutlineInputBorder(),
@@ -462,9 +506,11 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   Widget _buildTextField(String label, String key, bool required,
       {String initialValue = '',
       bool enabled = true,
-      Function(String)? onChanged}) {
+      Function(String)? onChanged,
+      required TextInputType keyBoardType}) {
     return TextFormField(
       initialValue: initialValue,
+      keyboardType: keyBoardType,
       decoration:
           InputDecoration(labelText: label, border: const OutlineInputBorder()),
       enabled: enabled,

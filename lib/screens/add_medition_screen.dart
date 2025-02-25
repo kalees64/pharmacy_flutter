@@ -3,7 +3,11 @@ import 'package:pharmacy_flutter/widgets/add_medition_form.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 
 class AddMeditionScreen extends StatefulWidget {
-  const AddMeditionScreen({super.key});
+  const AddMeditionScreen({super.key, this.token, this.user, this.userRole});
+
+  final dynamic userRole;
+  final Map<String, dynamic>? user;
+  final String? token;
 
   @override
   State<AddMeditionScreen> createState() => _AddMeditionScreenState();
@@ -38,7 +42,11 @@ class _AddMeditionScreenState extends State<AddMeditionScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 5),
                       child: Padding(
                         padding: EdgeInsets.all(10),
-                        child: AddMedicineForm(),
+                        child: AddMedicineForm(
+                          user: widget.user,
+                          token: widget.token,
+                          userRole: widget.userRole,
+                        ),
                       ),
                     ),
                   ),
