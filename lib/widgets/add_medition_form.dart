@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
@@ -26,8 +27,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       TextEditingController();
   final TextEditingController _strengthController = TextEditingController();
   String _selectedStrengthScale = 'mg';
-  final List<Map<String, dynamic>> _compositions = [];
-  final List<Map<String, dynamic>> _taxes = [];
+
+  List<Map<String, dynamic>> _compositions = [];
+  List<Map<String, dynamic>> _taxes = [];
   final Map<String, dynamic> _formData = {
     'prescriptionRequired': false,
   };
@@ -89,6 +91,8 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     'mg/kg', // Weight-based dosing (e.g., per kg of body weight)
     'mcg/kg', // Microgram per kilogram
   ];
+
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -230,11 +234,20 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   }
 
   void _submitForm() async {
-    // if (_compositions.isEmpty || _taxes.isEmpty) {
-    //   return _showAlert('Please fill out both Composition and Tax fields.');
-    // }
+    setState(() {
+      isLoading = true;
+    });
+    if (_compositions.isEmpty || _taxes.isEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+      return _showAlert('Please fill out both Composition and Tax fields.');
+    }
 
     if (!_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = false;
+      });
       return _showAlert('Please fill all mandatory fields.');
     }
 
@@ -272,12 +285,12 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
         print('--Medicine data: $newMedicine');
 
-        final apiUrl = Uri.parse('http://localhost:3000/api/v1/medicines');
+        final url = Uri.parse('$apiUrl/medicines');
 
         final jsonEncodedMedicineData = json.encode(newMedicine);
 
         try {
-          final res = await http.post(apiUrl,
+          final res = await http.post(url,
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ${widget.token}',
@@ -287,15 +300,32 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           final resData = jsonDecode(res.body);
 
           print('Response Data: $resData');
+
+          setState(() {
+            isLoading = false;
+          });
         } catch (e) {
           print('Error add medicine : $e');
         }
 
-// setState(() {
-        //   _formData.clear();
-        // });
-        // _formKey.currentState!.reset();
+        setState(() {
+          isLoading = false;
+        });
+
+        setState(() {
+          _formData.clear();
+          _compositions = [];
+          _taxes = [];
+        });
+        _formKey.currentState!.reset();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Medicine data added')),
+        );
       } catch (e) {
+        setState(() {
+          isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to generate QR code: $e')),
         );
@@ -490,12 +520,14 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
               const SizedBox(height: 20),
 
-              ElevatedButton(
-                onPressed: () {
-                  _submitForm();
-                },
-                child: const Text('Submit'),
-              ),
+              if (!isLoading)
+                ElevatedButton(
+                  onPressed: () {
+                    _submitForm();
+                  },
+                  child: const Text('Submit'),
+                ),
+              if (isLoading) CircularProgressIndicator()
             ],
           ),
         ),

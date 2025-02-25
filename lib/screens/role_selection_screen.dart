@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 import 'package:pharmacy_flutter/widgets/role_selection_form.dart';
 import 'package:http/http.dart' as http;
@@ -26,13 +27,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   }
 
   void _getUserRoles() async {
-    final apiUrl = Uri.parse('http://localhost:3000/api/v1/auth/role');
+    final url = Uri.parse('$apiUrl/auth/role');
 
     final username = widget.user?['email'];
 
     try {
       final response = await http
-          .post(apiUrl, body: json.encode({'username': username}), headers: {
+          .post(url, body: json.encode({'username': username}), headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${widget.token}',
       });

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/screens/role_selection_screen.dart';
 
 class LoginForm extends StatefulWidget {
@@ -28,7 +29,7 @@ class _LoginFormState extends State<LoginForm> {
       return;
     }
 
-    final apiUrl = Uri.parse('http://localhost:3000/api/v1/auth/login');
+    final url = Uri.parse('$apiUrl/auth/login');
 
     dynamic data = json.encode({
       'username': _usernameController.text,
@@ -39,7 +40,7 @@ class _LoginFormState extends State<LoginForm> {
 
     try {
       final response = await http.post(
-        apiUrl,
+        url,
         headers: {'Content-Type': 'application/json'},
         body: data,
       );
