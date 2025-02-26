@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/screens/add_medition_screen.dart';
 import 'package:pharmacy_flutter/screens/login_screen.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, this.token, this.user, this.userRole});
@@ -26,7 +27,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 )));
   }
 
-  void _logout() {
+  void _logout() async {
+    final SharedPreferences localStorage =
+        await SharedPreferences.getInstance();
+    await localStorage.remove('token');
+    await localStorage.remove('user');
+    await localStorage.clear();
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (ctx) => const LoginScreen()),

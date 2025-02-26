@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/screens/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RoleSelectionForm extends StatefulWidget {
   const RoleSelectionForm(
@@ -27,6 +30,10 @@ class _RoleSelectionFormState extends State<RoleSelectionForm> {
 
     print("Selected Role : $_selectedRole");
     print("Selected Role Details : $selectedRoleDetails");
+
+    final SharedPreferences localStorage =
+        await SharedPreferences.getInstance();
+    await localStorage.setString('user', json.encode(selectedRoleDetails));
 
     Navigator.push(
         context,

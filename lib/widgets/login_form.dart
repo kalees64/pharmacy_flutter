@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/screens/role_selection_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
@@ -50,9 +51,10 @@ class _LoginFormState extends State<LoginForm> {
         print('Response data: $data');
         // print('User Token: ${data['token']}');
 
-        // final localStorage = await SharedPreferences.getInstance();
-        // await localStorage.setString('user', json.encode(data));
-        // await localStorage.setString('token', data['token']);
+        final SharedPreferences localStorage =
+            await SharedPreferences.getInstance();
+        await localStorage.setString('user', json.encode(data));
+        await localStorage.setString('token', data['token']);
 
         Navigator.push(
           context,
