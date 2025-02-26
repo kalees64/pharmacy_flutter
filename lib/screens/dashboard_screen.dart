@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/screens/add_medition_screen.dart';
 import 'package:pharmacy_flutter/screens/login_screen.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
@@ -44,26 +45,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          leading: Image.asset('assets/pharmacy_logo.png'),
-          title: navBarTitle("Dashboard"),
-          actions: [
-            Tooltip(
-              message: "Add Medition",
-              child: IconButton(
-                icon: Icon(Icons.local_pharmacy_outlined),
-                onPressed: () {
-                  _navigateToAddMedicinePage();
-                },
-              ),
-            ),
-            IconButton(
-              icon: Icon(Icons.logout),
+        leading: Image.asset('assets/pharmacy_logo.png'),
+        title: navBarTitle("Dashboard"),
+        actions: [
+          Tooltip(
+            message: "Add Medition",
+            child: IconButton(
+              icon: Icon(Icons.local_pharmacy_outlined),
               onPressed: () {
-                _logout();
+                _navigateToAddMedicinePage();
               },
-            )
-          ],
-          backgroundColor: const Color.fromARGB(251, 6, 231, 14)),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              _logout();
+            },
+          )
+        ],
+        backgroundColor: appBarColor,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -71,10 +73,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: double.infinity,
               // padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Colors.lightGreenAccent,
-                  const Color.fromARGB(255, 11, 230, 18)
-                ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: LinearGradient(
+                    colors: gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
               ),
               child: Column(
                 spacing: 10,

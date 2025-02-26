@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 import 'package:pharmacy_flutter/widgets/role_selection_form.dart';
@@ -63,10 +64,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 width: double.infinity,
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    Colors.green,
-                    Colors.lightGreenAccent,
-                  ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  gradient: LinearGradient(
+                      colors: gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
                 ),
                 child: Column(
                   spacing: 10,

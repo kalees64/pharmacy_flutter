@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 import 'package:pharmacy_flutter/widgets/login_form.dart';
 
@@ -22,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [Colors.lightGreenAccent, Colors.green],
+                      colors: gradientColors,
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight),
                 ),

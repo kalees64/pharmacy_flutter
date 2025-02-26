@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/widgets/add_medition_form.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 
@@ -19,7 +20,7 @@ class _AddMeditionScreenState extends State<AddMeditionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: navBarTitle("Add Medition"),
-        backgroundColor: const Color.fromARGB(251, 6, 231, 14),
+        backgroundColor: appBarColor,
       ),
       body: Column(
         children: [
@@ -28,10 +29,10 @@ class _AddMeditionScreenState extends State<AddMeditionScreen> {
               width: double.infinity,
               // padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Colors.lightGreenAccent,
-                  const Color.fromARGB(255, 11, 230, 18)
-                ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                gradient: LinearGradient(
+                    colors: gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight),
               ),
               child: Column(
                 spacing: 10,
