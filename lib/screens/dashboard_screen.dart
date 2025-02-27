@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/screens/add_medition_screen.dart';
 import 'package:pharmacy_flutter/screens/login_screen.dart';
+import 'package:pharmacy_flutter/screens/view_medicine_screen.dart';
+import 'package:pharmacy_flutter/services/medicine_service.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, this.token, this.user, this.userRole});
+  const DashboardScreen({super.key, this.token, this.user});
 
-  final dynamic userRole;
   final Map<String, dynamic>? user;
   final String? token;
 
@@ -17,6 +18,29 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final MedicineService medicineService = MedicineService();
+
+  List<dynamic> _medicines = [];
+
+  @override
+  void initState() {
+    fetchMedicines();
+    // TODO: implement initState
+    super.initState();
+  }
+
+  void fetchMedicines() async {
+    try {
+      final resData = await medicineService.getAllMedicines(widget.token!);
+      print('Medicines: $resData');
+      setState(() {
+        _medicines = resData;
+      });
+    } catch (e) {
+      print("--Error fetching medicines: $e");
+    }
+  }
+
   void _navigateToAddMedicinePage() {
     Navigator.push(
         context,
@@ -24,7 +48,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             builder: (ctx) => AddMeditionScreen(
                   user: widget.user,
                   token: widget.token,
-                  userRole: widget.userRole,
                 )));
   }
 
@@ -46,10 +69,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: Image.asset('assets/pharmacy_logo.png'),
-        title: navBarTitle("Dashboard"),
+        title: navBarTitle("Medicines"),
         actions: [
           Tooltip(
-            message: "Add Medition",
+            message: "Add Medicine",
             child: IconButton(
               icon: Icon(Icons.local_pharmacy_outlined),
               onPressed: () {
@@ -71,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Expanded(
             child: Container(
               width: double.infinity,
-              // padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: gradientColors,
@@ -80,18 +103,47 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               child: Column(
                 spacing: 10,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Container(
-                      color: const Color.fromARGB(55, 255, 255, 255),
-                      padding: EdgeInsets.symmetric(horizontal: 5),
-                      child: Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Center(
-                            child: Image.asset('assets/pharmacy_logo.png'),
-                          )),
+                  h2("Medicines (${_medicines.length.toString()})"),
+                  if (_medicines.isEmpty)
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: primaryColor,
+                      ),
                     ),
-                  ),
+                  if (_medicines.isNotEmpty)
+                    Expanded(
+                      child: ListView.builder(
+                          itemCount: _medicines.length,
+                          itemBuilder: (ctx, index) {
+                            final medicine = _medicines[index];
+                            return InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (ctx) =>
+                                        ViewMedicineScreen(medicine: medicine),
+                                  ),
+                                );
+                              },
+                              child: Card(
+                                child: ListTile(
+                                  title: Text(
+                                    medicine['medicineName'] ??
+                                        'Unknown Medicine',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                      'Manufacturer: ${medicine['manufacturerName'] ?? 0}'),
+                                ),
+                              ),
+                            );
+                          }),
+                    ),
                 ],
               ),
             ),

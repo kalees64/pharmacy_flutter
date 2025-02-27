@@ -41,7 +41,6 @@ class _RoleSelectionFormState extends State<RoleSelectionForm> {
             builder: (context) => DashboardScreen(
                   user: widget.user,
                   token: widget.token,
-                  userRole: selectedRoleDetails,
                 )));
   }
 

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:pharmacy_flutter/constants/environment.dart';
+import 'package:pharmacy_flutter/screens/dashboard_screen.dart';
+import 'package:pharmacy_flutter/services/medicine_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
@@ -94,11 +96,36 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
   bool isLoading = false;
 
+  // final List<String> _medicines = [
+  //   'Paracetamol',
+  //   'Ibuprofen',
+  //   'Aspirin',
+  //   'Amoxicillin',
+  //   'Cetirizine',
+  // ];
+
+  final MedicineService medicineService = MedicineService();
+
+  List<dynamic> _medicines = [];
+
   @override
   void initState() {
     print("User Token : ${widget.token}");
+    fetchMedicines();
     // TODO: implement initState
     super.initState();
+  }
+
+  void fetchMedicines() async {
+    try {
+      final resData = await medicineService.getAllMedicines(widget.token!);
+      print('Medicines: $resData');
+      setState(() {
+        _medicines = resData;
+      });
+    } catch (e) {
+      print("--Error fetching medicines: $e");
+    }
   }
 
   void _calculateTotalCost() {
@@ -184,21 +211,38 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
   Map<String, dynamic> payload() {
     return {
-      "medicineName": _formData['medicineName'],
-      "manufacturerName": _formData['manufacturer'],
-      "batchNumber": _formData['batchNo'],
+      "medicineName": _formData['medicineName']?.isEmpty ?? true
+          ? null
+          : _formData['medicineName'],
+      "manufacturerName": _formData['manufacturer']?.isEmpty ?? true
+          ? null
+          : _formData['manufacturer'],
+      "batchNumber":
+          _formData['batchNo']?.isEmpty ?? true ? null : _formData['batchNo'],
       "qrCodeUrl": "",
-      "usageIndications": _formData['usageIndications'],
-      "dosageForm": _formData['dosageForm'],
-      "unitOfMeasurement": _formData['unitOfMeasurement'],
+      "usageIndications": _formData['usageIndications']?.isEmpty ?? true
+          ? null
+          : _formData['usageIndications'],
+      "dosageForm": _formData['dosageForm']?.isEmpty ?? true
+          ? null
+          : _formData['dosageForm'],
+      "unitOfMeasurement": _formData['unitOfMeasurement']?.isEmpty ?? true
+          ? null
+          : _formData['unitOfMeasurement'],
 
       // Compositions
       "compositions": _compositions,
 
       // Supply and purchase
-      "supplierName": _formData['supplierName'],
-      "invoiceNumber": _formData['invoiceNo'],
-      "purchaseDate": _formData['purchaseDate'],
+      "supplierName": _formData['supplierName']?.isEmpty ?? true
+          ? null
+          : _formData['supplierName'],
+      "invoiceNumber": _formData['invoiceNo']?.isEmpty ?? true
+          ? null
+          : _formData['invoiceNo'],
+      "purchaseDate": _formData['purchaseDate']?.isEmpty ?? true
+          ? null
+          : _formData['purchaseDate'],
       "receivedQuantity": int.tryParse(_formData['receivedQuantity'] ?? '0'),
       "purchasePricePerUnit":
           double.tryParse(_formData['purchasePricePerUnit'] ?? '0.0'),
@@ -207,16 +251,24 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
               (int.tryParse(_formData['receivedQuantity'] ?? '0') ?? 0),
 
       // Stock and inventory details
-      "stockLocation": _formData['stockLocation'],
+      "stockLocation": _formData['stockLocation']?.isEmpty ?? true
+          ? null
+          : _formData['stockLocation'],
       "currentStockQuantity":
           int.tryParse(_formData['currentStockQuantity'] ?? '0'),
       "minimumStockLevel": int.tryParse(_formData['minStockLevel'] ?? '0'),
       "maximumStockLevel": int.tryParse(_formData['maxStockLevel'] ?? '0'),
 
       // Expiry and storage information
-      "manufacturedDate": _formData['manufactureDate'],
-      "expiryDate": _formData['expiryDate'],
-      "storageConditions": _formData['storageConditions'],
+      "manufacturedDate": _formData['manufactureDate']?.isEmpty ?? true
+          ? null
+          : _formData['manufactureDate'],
+      "expiryDate": _formData['expiryDate']?.isEmpty ?? true
+          ? null
+          : _formData['expiryDate'],
+      "storageConditions": _formData['storageConditions']?.isEmpty ?? true
+          ? null
+          : _formData['storageConditions'],
 
       // Sales and pricing details
       "sellingPricePerUnit":
@@ -227,8 +279,12 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       "taxDetails": _taxes,
 
       // Regulatory information
-      "drugLicenseNumber": _formData['drugLicenceNumber'],
-      "scheduleCategory": _formData['scheduleCategory'],
+      "drugLicenseNumber": _formData['drugLicenceNumber']?.isEmpty ?? true
+          ? null
+          : _formData['drugLicenceNumber'],
+      "scheduleCategory": _formData['scheduleCategory']?.isEmpty ?? true
+          ? null
+          : _formData['scheduleCategory'],
       "prescriptionRequired": _formData['prescriptionRequired'] ?? false,
     };
   }
@@ -237,12 +293,12 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     setState(() {
       isLoading = true;
     });
-    if (_compositions.isEmpty || _taxes.isEmpty) {
-      setState(() {
-        isLoading = false;
-      });
-      return _showAlert('Please fill out both Composition and Tax fields.');
-    }
+    // if (_compositions.isEmpty || _taxes.isEmpty) {
+    //   setState(() {
+    //     isLoading = false;
+    //   });
+    //   return _showAlert('Please fill out both Composition and Tax fields.');
+    // }
 
     if (!_formKey.currentState!.validate()) {
       setState(() {
@@ -256,6 +312,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
       final newMedicine = payload();
       final jsonData = jsonEncode(newMedicine);
+
+      print("--Payload : $newMedicine");
+      print("--Payload Json : $jsonData");
 
       try {
         // Generate QR code image
@@ -279,11 +338,11 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
         // Encode QR code image as a base64 data URL
         final qrCodeDataUrl = "data:image/png;base64,${base64Encode(pngBytes)}";
 
-        print('QR Code Data URL: $qrCodeDataUrl');
+        // print('QR Code Data URL: $qrCodeDataUrl');
 
         newMedicine['qrCodeUrl'] = qrCodeDataUrl;
 
-        print('--Medicine data: $newMedicine');
+        // print('--Medicine data: $newMedicine');
 
         final url = Uri.parse('$apiUrl/medicines');
 
@@ -320,8 +379,20 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
         _formKey.currentState!.reset();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Medicine data added')),
+          SnackBar(
+            content: Text('Medicine data added'),
+            showCloseIcon: true,
+            duration: Durations.extralong4,
+          ),
         );
+
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (ctx) => DashboardScreen(
+                      token: widget.token,
+                      user: widget.user,
+                    )));
       } catch (e) {
         setState(() {
           isLoading = false;
@@ -333,223 +404,316 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            spacing: 10,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              h2("1. Basic Details"),
-              _buildTextField('Medicine Name', 'medicineName', true,
-                  keyBoardType: TextInputType.text),
-              _buildTextField('Manufacturer', 'manufacturer', true,
-                  keyBoardType: TextInputType.text),
-              _buildTextField('Batch No', 'batchNo', true,
-                  keyBoardType: TextInputType.text),
-              _buildTextField('Usage Indications', 'usageIndications', true,
-                  keyBoardType: TextInputType.text),
-              _buildDropdown('Dosage Form', 'dosageForm', dosageForms, true),
-              _buildDropdown('Unit of Measurement', 'unitOfMeasurement',
-                  unitMeasurements, true),
-              const SizedBox(height: 20),
+  final TextEditingController _manufacturerController = TextEditingController();
 
-              h2(("2. Compositions")),
-              TextFormField(
-                controller: _activeIngredientController,
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(
-                  labelText: 'Active Ingredient',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              TextFormField(
-                controller: _strengthController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Strength',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              DropdownButtonFormField<String>(
-                value: _selectedStrengthScale.isNotEmpty
-                    ? _selectedStrengthScale
-                    : null,
-                items: unitMeasurements.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedStrengthScale = newValue!;
-                  });
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Strength Scale',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _addComposition,
-                child: const Text('Add Composition'),
-              ),
-              _buildCompositionTable(),
-              const SizedBox(height: 20),
-
-              h2(("3. Supply And Purchase Details")),
-              _buildTextField('Supplier Name', 'supplierName', true,
-                  keyBoardType: TextInputType.text),
-              _buildTextField('Invoice No', 'invoiceNo', true,
-                  keyBoardType: TextInputType.text),
-              _buildDatePicker('Purchase Date', 'purchaseDate', true),
-              _buildTextField('Received Quantity', 'receivedQuantity', true,
-                  onChanged: (value) => _calculateTotalCost(),
-                  keyBoardType: TextInputType.number),
-              _buildTextField(
-                  'Purchase Price per Unit', 'purchasePricePerUnit', true,
-                  onChanged: (value) => _calculateTotalCost(),
-                  keyBoardType: TextInputType.number),
-              // _buildTextField('Total Purchase Cost', 'totalPurchaseCost', true,
-              //     enabled: false),
-              const SizedBox(height: 20),
-
-              h2(("4. Stock And Invertory Details")),
-              _buildTextField('Stock Location', 'stockLocation', true,
-                  keyBoardType: TextInputType.text),
-              _buildTextField(
-                  'Current Stock Quantity', 'currentStockQuantity', true,
-                  keyBoardType: TextInputType.number),
-              _buildTextField('Min Stock Level', 'minStockLevel', true,
-                  keyBoardType: TextInputType.number),
-              _buildTextField('Max Stock Level', 'maxStockLevel', true,
-                  keyBoardType: TextInputType.number),
-              const SizedBox(height: 20),
-
-              h2(("5. Regulatory Information")),
-              _buildTextField('Drug Licence Number', 'drugLicenceNumber', true,
-                  keyBoardType: TextInputType.text),
-              const SizedBox(height: 10),
-              _buildTextField('Schedule Category', 'scheduleCategory', true,
-                  keyBoardType: TextInputType.text),
-              const SizedBox(height: 10),
-              _buildCheckbox('Prescription Required', 'prescriptionRequired'),
-              const SizedBox(height: 20),
-
-              h2(("6. Expiry And Storage Information")),
-              _buildDatePicker('Manufacture Date', 'manufactureDate', true),
-              _buildDatePicker('Expiry Date', 'expiryDate', true),
-              _buildTextField('Storage Conditions', 'storageConditions', true,
-                  keyBoardType: TextInputType.text),
-              const SizedBox(height: 20),
-
-              h2(("7. Sales And Pricing Details")),
-              _buildTextField(
-                  'Selling Price Per Unit', 'sellingPricePerUnit', true,
-                  keyBoardType: TextInputType.number),
-              _buildTextField('Discount', 'discount', true,
-                  keyBoardType: TextInputType.number),
-              const SizedBox(height: 20),
-
-              h2(("8. Tax Details")),
-              TextFormField(
-                controller: _taxTypeController,
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(
-                  labelText: 'Tax Type',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              TextFormField(
-                controller: _taxRateController,
-                decoration: const InputDecoration(
-                  labelText: 'Tax Rate (%)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              ElevatedButton(
-                onPressed: _addTax,
-                child: const Text('Add Tax'),
-              ),
-              // Table header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('S.No', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Tax Type',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Tax Rate',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('Action', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const Divider(),
-              // Table rows
-              Column(
-                children: _taxes.asMap().entries.map((entry) {
-                  final index = entry.key + 1; // S.No starts from 1
-                  final tax = entry.value;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(index.toString()),
-                        Text(tax['taxType']),
-                        Text('${tax['taxRate'].toString()}%'),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {
-                            setState(() {
-                              _taxes.removeAt(entry.key);
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              const SizedBox(height: 20),
-
-              if (!isLoading)
-                ElevatedButton(
-                  onPressed: () {
-                    _submitForm();
-                  },
-                  child: const Text('Submit'),
-                ),
-              if (isLoading) CircularProgressIndicator()
-            ],
-          ),
-        ),
-      ),
-    );
+  void autoFetchManufacturerName(String medicineName) {
+    if (medicineName.isEmpty) return;
+    setState(() {
+      _formData['medicineName'] = medicineName;
+      final selectedMedicine =
+          _medicines.firstWhere((item) => item['medicineName'] == medicineName);
+      print("--Selected Medicine : $selectedMedicine");
+      _formData['manufacturer'] = selectedMedicine["manufacturerName"];
+      _manufacturerController.text = selectedMedicine['manufacturerName'];
+    });
   }
 
-  Widget _buildTextField(String label, String key, bool required,
-      {String initialValue = '',
-      bool enabled = true,
-      Function(String)? onChanged,
-      required TextInputType keyBoardType}) {
+  @override
+  Widget build(BuildContext context) {
+    return _medicines.isEmpty
+        ? SizedBox(
+            width: double.infinity,
+            height: 20,
+            child: CircularProgressIndicator(),
+          )
+        : Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  spacing: 10,
+                  // crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    h2("1. Basic Details"),
+                    Autocomplete<String>(
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        if (textEditingValue.text.isEmpty) {
+                          return const Iterable<String>.empty();
+                        }
+
+                        return _medicines
+                            .where((medicine) => medicine['medicineName']
+                                .toLowerCase()
+                                .contains(textEditingValue.text.toLowerCase()))
+                            .map((medicine) =>
+                                medicine['medicineName'] as String);
+                      },
+                      onSelected: (String selectedMedicine) {
+                        autoFetchManufacturerName(selectedMedicine);
+                      },
+                      fieldViewBuilder: (BuildContext context,
+                          TextEditingController textEditingController,
+                          FocusNode focusNode,
+                          VoidCallback onFieldSubmitted) {
+                        return TextField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            labelText: 'Medicine name',
+                            border: OutlineInputBorder(),
+                          ),
+                        );
+                      },
+                    ),
+                    // _buildTextField('Brand Name', 'medicineName', true,
+                    //     keyBoardType: TextInputType.text),
+                    _buildTextField(
+                      'Manufacturer',
+                      'manufacturer',
+                      true,
+                      keyBoardType: TextInputType.text,
+                      controller: _manufacturerController,
+                    ),
+                    _buildTextField('Batch No', 'batchNo', true,
+                        keyBoardType: TextInputType.text),
+                    _buildTextField(
+                        'Usage Indications', 'usageIndications', true,
+                        keyBoardType: TextInputType.text),
+                    _buildDropdown(
+                        'Dosage Form', 'dosageForm', dosageForms, true),
+                    _buildDropdown(
+                        'Dose', 'unitOfMeasurement', unitMeasurements, true),
+                    const SizedBox(height: 20),
+
+                    h2(("2. Compositions")),
+                    TextFormField(
+                      controller: _activeIngredientController,
+                      keyboardType: TextInputType.text,
+                      decoration: const InputDecoration(
+                        labelText: 'Active Ingredient',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    TextFormField(
+                      controller: _strengthController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Strength',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    DropdownButtonFormField<String>(
+                      value: _selectedStrengthScale.isNotEmpty
+                          ? _selectedStrengthScale
+                          : null,
+                      items: unitMeasurements.map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedStrengthScale = newValue!;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Strength Scale',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _addComposition,
+                      child: const Text('Add Composition'),
+                    ),
+                    _buildCompositionTable(),
+                    const SizedBox(height: 20),
+
+                    h2(("3. Supply And Purchase Details")),
+                    _buildTextField('Supplier Name', 'supplierName', true,
+                        keyBoardType: TextInputType.text),
+                    _buildTextField('Invoice No', 'invoiceNo', true,
+                        keyBoardType: TextInputType.text),
+                    _buildDatePicker('Purchase Date', 'purchaseDate', true),
+                    _buildTextField(
+                        'Received Quantity', 'receivedQuantity', true,
+                        onChanged: (value) => _calculateTotalCost(),
+                        keyBoardType: TextInputType.number),
+                    _buildTextField(
+                        'Purchase Price per Unit', 'purchasePricePerUnit', true,
+                        onChanged: (value) => _calculateTotalCost(),
+                        keyBoardType: TextInputType.number),
+                    // _buildTextField('Total Purchase Cost', 'totalPurchaseCost', true,
+                    //     enabled: false),
+                    const SizedBox(height: 20),
+
+                    h2(("4. Stock And Invertory Details")),
+                    _buildTextField('Stock Location', 'stockLocation', true,
+                        keyBoardType: TextInputType.text),
+                    _buildTextField(
+                        'Current Stock Quantity', 'currentStockQuantity', true,
+                        keyBoardType: TextInputType.number),
+                    _buildTextField('Min Stock Level', 'minStockLevel', true,
+                        keyBoardType: TextInputType.number),
+                    _buildTextField('Max Stock Level', 'maxStockLevel', true,
+                        keyBoardType: TextInputType.number),
+                    const SizedBox(height: 20),
+
+                    h2(("5. Regulatory Information")),
+                    _buildTextField(
+                        'Drug Licence Number', 'drugLicenceNumber', true,
+                        keyBoardType: TextInputType.text),
+                    _buildTextField(
+                        'Schedule Category', 'scheduleCategory', true,
+                        keyBoardType: TextInputType.text),
+                    // _buildCheckbox('Prescription Required', 'prescriptionRequired'),
+                    const SizedBox(height: 20),
+
+                    h2(("6. Expiry And Storage Information")),
+                    _buildDatePicker(
+                        'Manufacture Date', 'manufactureDate', true),
+                    _buildDatePicker('Expiry Date', 'expiryDate', true),
+                    _buildTextField(
+                        'Storage Conditions', 'storageConditions', true,
+                        keyBoardType: TextInputType.text),
+                    const SizedBox(height: 20),
+
+                    h2(("7. Sales And Pricing Details")),
+                    _buildTextField(
+                        'Selling Price Per Unit', 'sellingPricePerUnit', true,
+                        keyBoardType: TextInputType.number),
+                    _buildTextField('Discount (%)', 'discount', true,
+                        keyBoardType: TextInputType.number),
+                    const SizedBox(height: 20),
+
+                    h2(("8. Tax Details")),
+                    TextFormField(
+                      controller: _taxTypeController,
+                      keyboardType: TextInputType.text,
+                      decoration: const InputDecoration(
+                        labelText: 'Tax Type',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    TextFormField(
+                      controller: _taxRateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Tax Rate (%)',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    ElevatedButton(
+                      onPressed: _addTax,
+                      child: const Text('Add Tax'),
+                    ),
+                    // Table header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text('S.No',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text('Tax Type',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text('Tax Rate',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text('Action',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const Divider(),
+                    // Table rows
+                    Column(
+                      children: _taxes.asMap().entries.map((entry) {
+                        final index = entry.key + 1; // S.No starts from 1
+                        final tax = entry.value;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(index.toString()),
+                              Text(tax['taxType']),
+                              Text('${tax['taxRate'].toString()}%'),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  setState(() {
+                                    _taxes.removeAt(entry.key);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    if (!isLoading)
+                      ElevatedButton(
+                        onPressed: () {
+                          _submitForm();
+                        },
+                        child: const Text('Submit'),
+                      ),
+
+                    if (isLoading) CircularProgressIndicator(),
+
+                    SizedBox(
+                      height: 20,
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+  }
+
+  // Widget _buildTextField(String label, String key, bool required,
+  //     {String initialValue = '',
+  //     bool enabled = true,
+  //     Function(String)? onChanged,
+  //     TextEditingController? controller,
+  //     required TextInputType keyBoardType}) {
+  //   return TextFormField(
+  //     initialValue: initialValue,
+  //     keyboardType: keyBoardType,
+  //     controller: controller,
+  //     decoration:
+  //         InputDecoration(labelText: label, border: const OutlineInputBorder()),
+  //     enabled: enabled,
+
+  //     onChanged: onChanged,
+  //     onSaved: (value) => _formData[key] = value ?? null,
+  //   );
+  // }
+
+  Widget _buildTextField(
+    String label,
+    String key,
+    bool required, {
+    required TextInputType keyBoardType,
+    TextEditingController? controller,
+    bool enabled = true,
+    Function(String)? onChanged,
+  }) {
     return TextFormField(
-      initialValue: initialValue,
+      controller: controller,
       keyboardType: keyBoardType,
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
       enabled: enabled,
-      validator: (value) => (required && (value == null || value.isEmpty))
-          ? 'This field is required'
-          : null,
       onChanged: onChanged,
+      // validator: (value) => (required && (value == null || value.isEmpty))
+      //     ? 'This field is required'
+      //     : null,
       onSaved: (value) => _formData[key] = value ?? '',
     );
   }
@@ -564,9 +728,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           .map((item) => DropdownMenuItem(value: item, child: Text(item)))
           .toList(),
       onChanged: (value) => setState(() => _formData[key] = value),
-      validator: (value) => (required && (value == null || value.isEmpty))
-          ? 'Please select a $label'
-          : null,
+      // validator: (value) => (required && (value == null || value.isEmpty))
+      //     ? 'Please select a $label'
+      //     : null,
       onSaved: (value) => _formData[key] = value ?? items.first,
     );
   }
@@ -598,10 +762,10 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           },
         ),
       ),
-      validator: (value) => (required && (value == null || value.isEmpty))
-          ? 'Please select a $label'
-          : null,
-      onSaved: (value) => _formData[key] = value ?? '',
+      // validator: (value) => (required && (value == null || value.isEmpty))
+      //     ? 'Please select a $label'
+      //     : null,
+      onSaved: (value) => _formData[key] = value ?? null,
     );
   }
 
