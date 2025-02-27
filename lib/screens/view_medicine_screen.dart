@@ -25,7 +25,7 @@ class _ViewMedicineScreenState extends State<ViewMedicineScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: navBarTitle(_medicine["medicineName"]),
+        title: navBarTitle(_medicine["medicineName"] ?? "N/A"),
         backgroundColor: appBarColor,
       ),
       body: SafeArea(

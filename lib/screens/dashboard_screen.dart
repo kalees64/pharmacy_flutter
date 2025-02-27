@@ -131,8 +131,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Card(
                                 child: ListTile(
                                   title: Text(
-                                    medicine['medicineName'] ??
-                                        'Unknown Medicine',
+                                    medicine['medicineName'] ?? 'N/A',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),

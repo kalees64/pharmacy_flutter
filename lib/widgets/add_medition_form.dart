@@ -211,9 +211,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
   Map<String, dynamic> payload() {
     return {
-      "medicineName": _formData['medicineName']?.isEmpty ?? true
-          ? null
-          : _formData['medicineName'],
+      "medicineName": _medicineController.text,
       "manufacturerName": _formData['manufacturer']?.isEmpty ?? true
           ? null
           : _formData['manufacturer'],
@@ -375,6 +373,8 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           _formData.clear();
           _compositions = [];
           _taxes = [];
+          _medicineController.text = '';
+          _manufacturerController.text = '';
         });
         _formKey.currentState!.reset();
 
@@ -404,6 +404,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     }
   }
 
+  final TextEditingController _medicineController = TextEditingController();
   final TextEditingController _manufacturerController = TextEditingController();
 
   void autoFetchManufacturerName(String medicineName) {
@@ -444,6 +445,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
                         return _medicines
                             .where((medicine) => medicine['medicineName']
+                                .toString()
                                 .toLowerCase()
                                 .contains(textEditingValue.text.toLowerCase()))
                             .map((medicine) =>
@@ -451,6 +453,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
                       },
                       onSelected: (String selectedMedicine) {
                         autoFetchManufacturerName(selectedMedicine);
+                        _medicineController.text = selectedMedicine;
                       },
                       fieldViewBuilder: (BuildContext context,
                           TextEditingController textEditingController,
@@ -459,6 +462,11 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
                         return TextField(
                           controller: textEditingController,
                           focusNode: focusNode,
+                          onChanged: (value) {
+                            if (value.isNotEmpty) {
+                              _medicineController.text = value;
+                            }
+                          },
                           decoration: InputDecoration(
                             labelText: 'Medicine name',
                             border: OutlineInputBorder(),
