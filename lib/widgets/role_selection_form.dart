@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/screens/dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,9 +20,16 @@ class RoleSelectionForm extends StatefulWidget {
 class _RoleSelectionFormState extends State<RoleSelectionForm> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedRole;
+  bool isLoading = false;
 
   void onSelectionSubmit() async {
+    setState(() {
+      isLoading = true;
+    });
     if (!_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -42,6 +50,10 @@ class _RoleSelectionFormState extends State<RoleSelectionForm> {
                   user: widget.user,
                   token: widget.token,
                 )));
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -73,15 +85,20 @@ class _RoleSelectionFormState extends State<RoleSelectionForm> {
                   value == null ? 'Please select a role' : null,
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  onSelectionSubmit();
-                },
-                child: const Text('Submit'),
+            if (isLoading)
+              CircularProgressIndicator(
+                color: primaryColor,
               ),
-            ),
+            if (!isLoading)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    onSelectionSubmit();
+                  },
+                  child: const Text('Submit'),
+                ),
+              ),
           ],
         ),
       ),

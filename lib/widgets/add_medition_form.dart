@@ -769,25 +769,25 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     );
   }
 
-  Widget _buildCheckbox(String label, String key) {
-    // Ensure the field is initialized with false if it doesn't exist
-    _formData[key] ??= false;
+  // Widget _buildCheckbox(String label, String key) {
+  //   // Ensure the field is initialized with false if it doesn't exist
+  //   _formData[key] ??= false;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Checkbox(
-          value: _formData[key],
-          onChanged: (bool? value) {
-            setState(() {
-              _formData[key] = value ?? false;
-            });
-          },
-        ),
-        Text(label),
-      ],
-    );
-  }
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.start,
+  //     children: [
+  //       Checkbox(
+  //         value: _formData[key],
+  //         onChanged: (bool? value) {
+  //           setState(() {
+  //             _formData[key] = value ?? false;
+  //           });
+  //         },
+  //       ),
+  //       Text(label),
+  //     ],
+  //   );
+  // }
 
   // Composition table
   Widget _buildCompositionTable() {

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/screens/role_selection_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,7 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -26,7 +28,13 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   void _submitForm() async {
+    setState(() {
+      isLoading = true;
+    });
     if (!_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -45,6 +53,17 @@ class _LoginFormState extends State<LoginForm> {
         headers: {'Content-Type': 'application/json'},
         body: data,
       );
+
+      if (response.statusCode == 404) {
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Invalid Login credentials")));
+
+        return;
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -66,11 +85,21 @@ class _LoginFormState extends State<LoginForm> {
           ),
         );
 
+        setState(() {
+          isLoading = false;
+        });
+
         _formKey.currentState!.reset();
       } else {
+        setState(() {
+          isLoading = false;
+        });
         print('Failed to load data: ${response.statusCode}');
       }
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       print('Error: $e');
     }
 
@@ -141,13 +170,18 @@ class _LoginFormState extends State<LoginForm> {
                   return null;
                 },
               ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Login'),
+              if (isLoading)
+                CircularProgressIndicator(
+                  color: primaryColor,
                 ),
-              ),
+              if (!isLoading)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    child: const Text('Login'),
+                  ),
+                ),
             ],
           ),
         ));
