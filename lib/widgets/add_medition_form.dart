@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/constants/environment.dart';
 import 'package:pharmacy_flutter/screens/dashboard_screen.dart';
 import 'package:pharmacy_flutter/services/medicine_service.dart';
@@ -29,6 +30,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       TextEditingController();
   final TextEditingController _strengthController = TextEditingController();
   String _selectedStrengthScale = 'mg';
+
+  final TextEditingController _medicineController = TextEditingController();
+  final TextEditingController _manufacturerController = TextEditingController();
 
   List<Map<String, dynamic>> _compositions = [];
   List<Map<String, dynamic>> _taxes = [];
@@ -104,9 +108,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   //   'Cetirizine',
   // ];
 
-  final MedicineService medicineService = MedicineService();
-
   List<dynamic> _medicines = [];
+
+  final MedicineService medicineService = MedicineService();
 
   @override
   void initState() {
@@ -322,7 +326,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           gapless: true,
         );
 
-        final ui.Image qrImage = await qrPainter.toImage(200);
+        final ui.Image qrImage = await qrPainter.toImage(400);
 
         // Convert QR code image to bytes
         final ByteData? byteData =
@@ -404,9 +408,6 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     }
   }
 
-  final TextEditingController _medicineController = TextEditingController();
-  final TextEditingController _manufacturerController = TextEditingController();
-
   void autoFetchManufacturerName(String medicineName) {
     if (medicineName.isEmpty) return;
     setState(() {
@@ -422,10 +423,10 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   @override
   Widget build(BuildContext context) {
     return _medicines.isEmpty
-        ? SizedBox(
-            width: double.infinity,
-            height: 20,
-            child: CircularProgressIndicator(),
+        ? Center(
+            child: CircularProgressIndicator(
+              color: primaryColor,
+            ),
           )
         : Padding(
             padding: const EdgeInsets.all(16.0),

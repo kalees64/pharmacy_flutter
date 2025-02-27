@@ -17,4 +17,12 @@ class MedicineService {
       throw Exception('Failed to load medicines');
     }
   }
+
+  Future<dynamic> generateQrCodeDataUrl(dynamic data, String token) async {
+    final url = Uri.parse('$apiUrl/medicines/qrcode');
+
+    return await http.post(url, body: json.decode(data), headers: {
+      'Authorization': 'Bearer $token',
+    });
+  }
 }
