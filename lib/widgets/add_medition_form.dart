@@ -37,7 +37,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   List<Map<String, dynamic>> _compositions = [];
   List<Map<String, dynamic>> _taxes = [];
   final Map<String, dynamic> _formData = {
-    'prescriptionRequired': false,
+    // 'prescriptionRequired': false,
   };
   final List<String> dosageForms = [
     'Tablet',
@@ -215,7 +215,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
   Map<String, dynamic> payload() {
     return {
-      "medicineName": _medicineController.text,
+      "medicineName": _medicineController.text ?? null,
       "manufacturerName": _formData['manufacturer']?.isEmpty ?? true
           ? null
           : _formData['manufacturer'],
@@ -233,7 +233,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           : _formData['unitOfMeasurement'],
 
       // Compositions
-      "compositions": _compositions,
+      "compositions": _compositions.length > 0 ? _compositions : null,
 
       // Supply and purchase
       "supplierName": _formData['supplierName']?.isEmpty ?? true
@@ -250,7 +250,13 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
           double.tryParse(_formData['purchasePricePerUnit'] ?? '0.0'),
       "totalPurchaseCost":
           (double.tryParse(_formData['purchasePricePerUnit'] ?? '0.0') ?? 0.0) *
-              (int.tryParse(_formData['receivedQuantity'] ?? '0') ?? 0),
+                      (int.tryParse(_formData['receivedQuantity'] ?? '0') ??
+                          0) >
+                  0
+              ? (double.tryParse(_formData['purchasePricePerUnit'] ?? '0.0') ??
+                      0.0) *
+                  (int.tryParse(_formData['receivedQuantity'] ?? '0') ?? 0)
+              : null,
 
       // Stock and inventory details
       "stockLocation": _formData['stockLocation']?.isEmpty ?? true
@@ -278,7 +284,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       "discount": double.tryParse(_formData['discount'] ?? '0.0'),
 
       // Tax details
-      "taxDetails": _taxes,
+      "taxDetails": _taxes.length > 0 ? _taxes : null,
 
       // Regulatory information
       "drugLicenseNumber": _formData['drugLicenceNumber']?.isEmpty ?? true
@@ -287,7 +293,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       "scheduleCategory": _formData['scheduleCategory']?.isEmpty ?? true
           ? null
           : _formData['scheduleCategory'],
-      "prescriptionRequired": _formData['prescriptionRequired'] ?? false,
+      // "prescriptionRequired": _formData['prescriptionRequired'] ?? false,
     };
   }
 
@@ -315,6 +321,20 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       final newMedicine = payload();
       final jsonData = jsonEncode(newMedicine);
 
+      if (newMedicine.values
+          .every((value) => value == null || value.toString().trim().isEmpty)) {
+        print("All fields are empty or null. Exiting the function.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'You not filled any of the field , so we can not proceed to add new medicine.')),
+        );
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+
       print("--Payload : $newMedicine");
       print("--Payload Json : $jsonData");
 
@@ -340,7 +360,12 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
         // Encode QR code image as a base64 data URL
         final qrCodeDataUrl = "data:image/png;base64,${base64Encode(pngBytes)}";
 
-        // print('QR Code Data URL: $qrCodeDataUrl');
+        print('QR Code Data URL: $qrCodeDataUrl');
+
+        // final qrCodeDataUrl = await medicineService.generateQrCodeDataUrl(
+        //     jsonData, widget.token!);
+
+        // final qrCodeDataUrl = json.decode(qrResponse.body);
 
         newMedicine['qrCodeUrl'] = qrCodeDataUrl;
 
@@ -391,12 +416,14 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
         );
 
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (ctx) => DashboardScreen(
-                      token: widget.token,
-                      user: widget.user,
-                    )));
+          context,
+          MaterialPageRoute(
+            builder: (ctx) => DashboardScreen(
+              token: widget.token,
+              user: widget.user,
+            ),
+          ),
+        );
       } catch (e) {
         setState(() {
           isLoading = false;
@@ -732,15 +759,23 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     return DropdownButtonFormField<String>(
       decoration:
           InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      value: _formData[key] ?? items.first,
-      items: items
-          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-          .toList(),
+      // value: _formData[key] ?? items.first,
+      value: _formData[key],
+      items: [
+        DropdownMenuItem(
+          value: null,
+          child: Text("--select--"),
+          enabled: true,
+        ),
+        ...items
+            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+            .toList()
+      ],
       onChanged: (value) => setState(() => _formData[key] = value),
       // validator: (value) => (required && (value == null || value.isEmpty))
       //     ? 'Please select a $label'
       //     : null,
-      onSaved: (value) => _formData[key] = value ?? items.first,
+      onSaved: (value) => _formData[key] = value ?? null,
     );
   }
 
