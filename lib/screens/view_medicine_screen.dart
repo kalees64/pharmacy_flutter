@@ -16,292 +16,158 @@ class _ViewMedicineScreenState extends State<ViewMedicineScreen> {
 
   @override
   void initState() {
-    _medicine = widget.medicine;
-    // TODO: implement initState
     super.initState();
+    _medicine = widget.medicine;
+    print("--medicine data from nav: ${widget.medicine}");
+    print("--medicine data: $_medicine");
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_medicine == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: navBarTitle(_medicine["medicineName"] ?? "N/A"),
         backgroundColor: appBarColor,
       ),
       body: SafeArea(
-          child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
               colors: gradientColors,
               begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-        ),
-        child: Expanded(
-            child: SingleChildScrollView(
-          child: Column(
-            children: [
-              if (_medicine["medicineName"] != null)
-                ListTile(
-                  title: Text("Brand Name"),
-                  subtitle: Text(
-                    _medicine["medicineName"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["manufacturerName"] != null)
-                ListTile(
-                  title: Text("Manufacturer Name"),
-                  subtitle: Text(
-                    _medicine["manufacturerName"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["batchNumber"] != null)
-                ListTile(
-                  title: Text("Batch No"),
-                  subtitle: Text(
-                    _medicine["batchNumber"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["dosageForm"] != null)
-                ListTile(
-                  title: Text("Dosage Form"),
-                  subtitle: Text(
-                    _medicine["dosageForm"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["unitOfMeasurement"] != null)
-                ListTile(
-                  title: Text("Dose"),
-                  subtitle: Text(
-                    _medicine["unitOfMeasurement"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["usageIndications"] != null)
-                ListTile(
-                  title: Text("Usage Indications"),
-                  subtitle: Text(
-                    _medicine["usageIndications"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine['compositions'] != null &&
-                  _medicine['compositions'].isNotEmpty)
-                ListTile(
-                  title: Text("Compositions"),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ..._medicine['compositions']
-                          .map(
-                            (item) => Text(
-                              (_medicine["compositions"].indexOf(item) + 1)
-                                      .toString() +
-                                  ". " +
-                                  item["activeIngredient"] +
-                                  " " +
-                                  item["strength"].toString() +
-                                  " " +
-                                  item["strengthScale"],
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          )
-                          .toList(),
-                    ],
-                  ),
-                ),
-              if (_medicine["supplierName"] != null)
-                ListTile(
-                  title: Text("Supplier Name"),
-                  subtitle: Text(
-                    _medicine["supplierName"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["invoiceNumber"] != null)
-                ListTile(
-                  title: Text("Invoice No"),
-                  subtitle: Text(
-                    _medicine["invoiceNumber"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["purchaseDate"] != null)
-                ListTile(
-                  title: Text("Purchase Date"),
-                  subtitle: Text(
-                    _medicine["purchaseDate"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["receivedQuantity"] != null)
-                ListTile(
-                  title: Text("Received Quantity"),
-                  subtitle: Text(
-                    _medicine["receivedQuantity"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["purchasePricePerUnit"] != null)
-                ListTile(
-                  title: Text("Purchase Price Per Unit"),
-                  subtitle: Text(
-                    _medicine["purchasePricePerUnit"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["totalPurchaseCost"] != null)
-                ListTile(
-                  title: Text("Total Purchase Cost"),
-                  subtitle: Text(
-                    _medicine["totalPurchaseCost"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["stockLocation"] != null)
-                ListTile(
-                  title: Text("Stock Location"),
-                  subtitle: Text(
-                    _medicine["stockLocation"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["currentStackQuantity"] != null)
-                ListTile(
-                  title: Text("Current Stack Quantity"),
-                  subtitle: Text(
-                    _medicine["currentStackQuantity"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["minimumStockLevel"] != null)
-                ListTile(
-                  title: Text("Minimum Stock Level"),
-                  subtitle: Text(
-                    _medicine["minimumStockLevel"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["maximumStockLevel"] != null)
-                ListTile(
-                  title: Text("Maximum Stock Level"),
-                  subtitle: Text(
-                    _medicine["maximumStockLevel"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-              if (_medicine["drugLicenseNumber"] != null)
-                ListTile(
-                  title: Text("Drug Licence Number"),
-                  subtitle: Text(
-                    _medicine["drugLicenseNumber"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["scheduleCategory"] != null)
-                ListTile(
-                  title: Text("Schedule Category"),
-                  subtitle: Text(
-                    _medicine["scheduleCategory"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["manufacturedDate"] != null)
-                ListTile(
-                  title: Text("Manufacture Date"),
-                  subtitle: Text(
-                    _medicine["manufacturedDate"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["expiryDate"] != null)
-                ListTile(
-                  title: Text("Expiry Date"),
-                  subtitle: Text(
-                    _medicine["expiryDate"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["storageConditions"] != null)
-                ListTile(
-                  title: Text("Storage Conditions"),
-                  subtitle: Text(
-                    _medicine["storageConditions"] ?? 'N/A',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-              if (_medicine["sellingPricePerUnit"] != null)
-                ListTile(
-                  title: Text("Selling Price Per Unit"),
-                  subtitle: Text(
-                    _medicine["sellingPricePerUnit"].toString(),
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              if (_medicine["discount"] != null)
-                ListTile(
-                  title: Text("Discount"),
-                  subtitle: Text(
-                    _medicine["discount"].toString() + " %",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-              if (_medicine['taxDetails'] != null &&
-                  _medicine['taxDetails'].isNotEmpty)
-                ListTile(
-                  title: Text("Taxes"),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ..._medicine['taxDetails']
-                          .map(
-                            (item) => Text(
-                              (_medicine["taxDetails"].indexOf(item) + 1)
-                                      .toString() +
-                                  ". " +
-                                  item["taxType"] +
-                                  " " +
-                                  item["taxRate"].toString() +
-                                  " %",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          )
-                          .toList(),
-                    ],
-                  ),
-                ),
-              SizedBox(
-                height: 10,
-              )
-              // Expanded(
-              //   child: ListView.builder(
-              //     itemCount: _medicine.entries.length,
-              //     itemBuilder: (context, index) {
-              //       final entry = _medicine.entries.elementAt(index);
-              //       final key = entry.key;
-              //       final value = entry.value ?? 'N/A'; // Show 'N/A' if null
-              //       return ListTile(
-              //         title: Text(key.toString().toUpperCase()),
-              //         subtitle: Text(
-              //           value.toString(),
-              //           style: TextStyle(fontWeight: FontWeight.bold),
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // )
-            ],
+              end: Alignment.bottomRight,
+            ),
           ),
-        )),
-      )),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_medicine["medicineName"] != null)
+                  _buildListTile("Brand Name", _medicine["medicineName"]),
+                if (_medicine["manufacturerName"] != null)
+                  _buildListTile(
+                      "Manufacturer Name", _medicine["manufacturerName"]),
+                if (_medicine["batchNumber"] != null)
+                  _buildListTile("Batch No", _medicine["batchNumber"]),
+                if (_medicine["dosageForm"] != null)
+                  _buildListTile("Dosage Form", _medicine["dosageForm"]),
+                if (_medicine["unitOfMeasurement"] != null)
+                  _buildListTile("Dose", _medicine["unitOfMeasurement"]),
+                if (_medicine["usageIndications"] != null)
+                  _buildListTile(
+                      "Usage Indications", _medicine["usageIndications"]),
+                if (_medicine['compositions'] != null &&
+                    _medicine['compositions'].isNotEmpty)
+                  _buildCompositionTile(_medicine['compositions']),
+                if (_medicine["supplierName"] != null)
+                  _buildListTile("Supplier Name", _medicine["supplierName"]),
+                if (_medicine["invoiceNumber"] != null)
+                  _buildListTile("Invoice No", _medicine["invoiceNumber"]),
+                if (_medicine["purchaseDate"] != null)
+                  _buildListTile("Purchase Date", _medicine["purchaseDate"]),
+                if (_medicine["receivedQuantity"] != null)
+                  _buildListTile("Received Quantity",
+                      _medicine["receivedQuantity"].toString()),
+                if (_medicine["purchasePricePerUnit"] != null)
+                  _buildListTile("Purchase Price Per Unit",
+                      _medicine["purchasePricePerUnit"].toString()),
+                if (_medicine["totalPurchaseCost"] != null)
+                  _buildListTile("Total Purchase Cost",
+                      _medicine["totalPurchaseCost"].toString()),
+                if (_medicine["stockLocation"] != null)
+                  _buildListTile("Stock Location", _medicine["stockLocation"]),
+                if (_medicine["currentStackQuantity"] != null)
+                  _buildListTile("Current Stack Quantity",
+                      _medicine["currentStackQuantity"].toString()),
+                if (_medicine["minimumStockLevel"] != null)
+                  _buildListTile("Minimum Stock Level",
+                      _medicine["minimumStockLevel"].toString()),
+                if (_medicine["maximumStockLevel"] != null)
+                  _buildListTile("Maximum Stock Level",
+                      _medicine["maximumStockLevel"].toString()),
+                if (_medicine["drugLicenseNumber"] != null)
+                  _buildListTile(
+                      "Drug Licence Number", _medicine["drugLicenseNumber"]),
+                if (_medicine["scheduleCategory"] != null)
+                  _buildListTile(
+                      "Schedule Category", _medicine["scheduleCategory"]),
+                if (_medicine["manufacturedDate"] != null)
+                  _buildListTile(
+                      "Manufacture Date", _medicine["manufacturedDate"]),
+                if (_medicine["expiryDate"] != null)
+                  _buildListTile("Expiry Date", _medicine["expiryDate"]),
+                if (_medicine["storageConditions"] != null)
+                  _buildListTile(
+                      "Storage Conditions", _medicine["storageConditions"]),
+                if (_medicine["sellingPricePerUnit"] != null)
+                  _buildListTile("Selling Price Per Unit",
+                      _medicine["sellingPricePerUnit"].toString()),
+                if (_medicine["discount"] != null)
+                  _buildListTile("Discount", "${_medicine["discount"]} %"),
+                if (_medicine['taxDetails'] != null &&
+                    _medicine['taxDetails'].isNotEmpty)
+                  _buildTaxTile(_medicine['taxDetails']),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListTile(String title, String value) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(
+        value,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildCompositionTile(List<dynamic> compositions) {
+    return ListTile(
+      title: const Text("Compositions"),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: compositions.map((item) {
+          final index = compositions.indexOf(item) + 1;
+          final ingredient = item["activeIngredient"] ?? "N/A";
+          final strength = item["strength"]?.toString() ?? "N/A";
+          final scale = item["strengthScale"] ?? "N/A";
+          return Text(
+            "$index. $ingredient $strength $scale",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildTaxTile(List<dynamic> taxDetails) {
+    return ListTile(
+      title: const Text("Taxes"),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: taxDetails.map((item) {
+          final index = taxDetails.indexOf(item) + 1;
+          final taxType = item["taxType"] ?? "N/A";
+          final taxRate = item["taxRate"]?.toString() ?? "N/A";
+          return Text(
+            "$index. $taxType $taxRate %",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          );
+        }).toList(),
+      ),
     );
   }
 }

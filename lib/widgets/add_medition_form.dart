@@ -39,64 +39,8 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   final Map<String, dynamic> _formData = {
     // 'prescriptionRequired': false,
   };
-  final List<String> dosageForms = [
-    'Tablet',
-    'Capsule',
-    'Caplet',
-    'Pill',
-    'Lozenge',
-    'Powder',
-    'Granules',
-    'Solution',
-    'Suspension',
-    'Syrup',
-    'Elixir',
-    'Tincture',
-    'Cream',
-    'Ointment',
-    'Gel',
-    'Paste',
-    'Injection',
-    'IV Infusion',
-    'Inhaler',
-    'Nebulizer Solution',
-    'Nasal Spray',
-    'Nasal Drops',
-    'Patch',
-    'Lotion',
-    'Suppository',
-    'Enema',
-    'Eye Drops',
-    'Ear Drops',
-    'Buccal Tablet',
-    'Sublingual Tablet',
-  ];
-  final List<String> unitMeasurements = [
-    'mcg', // Micrograms
-    'mg', // Milligrams
-    'g', // Grams
-    'kg', // Kilograms
-    'IU', // International Units
-    'ml', // Milliliters
-    'L', // Liters
-    'mEq', // Milliequivalents
-    'mmol', // Millimoles
-    '%', // Percentage (for creams, ointments, solutions)
-    'units', // Standard units (e.g., insulin)
-    'puffs', // For inhalers
-    'drops', // For eye/ear/nasal drops
-    'tablets', // Number of tablets
-    'capsules', // Number of capsules
-    'suppositories', // Rectal/Vaginal dosage forms
-    'sprays', // Number of sprays (nasal/oral)
-    'ampoules', // Injectable dosage forms
-    'vials', // Injectable dosage containers
-    'patches', // For transdermal patches
-    'hours', // For infusion rates (e.g., mg/hour)
-    'ml/hour', // Infusion rates
-    'mg/kg', // Weight-based dosing (e.g., per kg of body weight)
-    'mcg/kg', // Microgram per kilogram
-  ];
+  List<dynamic> _dosageForms = [];
+  List<dynamic> _unitMeasurements = [];
 
   bool isLoading = false;
 
@@ -116,6 +60,8 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
   void initState() {
     print("User Token : ${widget.token}");
     fetchMedicines();
+    fetchDosages();
+    fetchUnits();
     // TODO: implement initState
     super.initState();
   }
@@ -129,6 +75,30 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
       });
     } catch (e) {
       print("--Error fetching medicines: $e");
+    }
+  }
+
+  void fetchDosages() async {
+    try {
+      final resData = await medicineService.getAllDosages(widget.token!);
+      print('Dosages: $resData');
+      setState(() {
+        _dosageForms = resData;
+      });
+    } catch (e) {
+      print("--Error fetching dosages: $e");
+    }
+  }
+
+  void fetchUnits() async {
+    try {
+      final resData = await medicineService.getAllUnits(widget.token!);
+      print('Units: $resData');
+      setState(() {
+        _unitMeasurements = resData;
+      });
+    } catch (e) {
+      print("--Error fetching units: $e");
     }
   }
 
@@ -189,7 +159,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
       _activeIngredientController.clear();
       _strengthController.clear();
-      _selectedStrengthScale = unitMeasurements.first;
+      _selectedStrengthScale = _unitMeasurements.first;
     });
   }
 
@@ -449,7 +419,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
 
   @override
   Widget build(BuildContext context) {
-    return _medicines.isEmpty
+    return _medicines.isEmpty ||
+            _dosageForms.isEmpty ||
+            _unitMeasurements.isEmpty
         ? Center(
             child: CircularProgressIndicator(
               color: primaryColor,
@@ -517,9 +489,9 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
                         'Usage Indications', 'usageIndications', true,
                         keyBoardType: TextInputType.text),
                     _buildDropdown(
-                        'Dosage Form', 'dosageForm', dosageForms, true),
+                        'Dosage Form', 'dosageForm', _dosageForms, true),
                     _buildDropdown(
-                        'Dose', 'unitOfMeasurement', unitMeasurements, true),
+                        'Dose', 'unitOfMeasurement', _unitMeasurements, true),
                     const SizedBox(height: 20),
 
                     h2(("2. Compositions")),
@@ -540,18 +512,19 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
                       ),
                     ),
                     DropdownButtonFormField<String>(
-                      value: _selectedStrengthScale.isNotEmpty
+                      value: _unitMeasurements.any(
+                              (item) => item["name"] == _selectedStrengthScale)
                           ? _selectedStrengthScale
                           : null,
-                      items: unitMeasurements.map((String value) {
+                      items: _unitMeasurements.map((dynamic value) {
                         return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
+                          value: value["name"],
+                          child: Text(value["name"]),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
                         setState(() {
-                          _selectedStrengthScale = newValue!;
+                          _selectedStrengthScale = newValue ?? '';
                         });
                       },
                       decoration: const InputDecoration(
@@ -559,6 +532,7 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
                         border: OutlineInputBorder(),
                       ),
                     ),
+
                     ElevatedButton(
                       onPressed: _addComposition,
                       child: const Text('Add Composition'),
@@ -754,28 +728,61 @@ class _AddMedicineFormState extends State<AddMedicineForm> {
     );
   }
 
+  // Widget _buildDropdown(
+  //     String label, String key, List<dynamic> items, bool required) {
+  //   return DropdownButtonFormField<String>(
+  //     decoration:
+  //         InputDecoration(labelText: label, border: const OutlineInputBorder()),
+  //     // value: _formData[key] ?? items.first,
+  //     value: _formData[key],
+  //     items: [
+  //       DropdownMenuItem(
+  //         value: null,
+  //         child: Text("--select--"),
+  //         enabled: true,
+  //       ),
+  //       ...items
+  //           .map((item) => DropdownMenuItem(value: item["name"], child: Text(item["name"])))
+  //           .toList()
+  //     ],
+  //     onChanged: (value) => setState(() => _formData[key] = value),
+  //     // validator: (value) => (required && (value == null || value.isEmpty))
+  //     //     ? 'Please select a $label'
+  //     //     : null,
+  //     onSaved: (value) => _formData[key] = value ?? null,
+  //   );
+  // }
+
   Widget _buildDropdown(
-      String label, String key, List<String> items, bool required) {
+      String label, String key, List<dynamic> items, bool required) {
+    final selectedValue = _formData[key] as String?;
+
     return DropdownButtonFormField<String>(
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      // value: _formData[key] ?? items.first,
-      value: _formData[key],
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      value: items.any((item) => item["name"] == selectedValue)
+          ? selectedValue
+          : null, // Safely handle null values
       items: [
-        DropdownMenuItem(
-          value: null,
+        const DropdownMenuItem<String>(
+          value: '', // Placeholder value for "select"
           child: Text("--select--"),
-          enabled: true,
         ),
-        ...items
-            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-            .toList()
+        ...items.map((item) {
+          final itemName = item["name"] as String? ?? '';
+          return DropdownMenuItem<String>(
+            value: itemName,
+            child: Text(itemName),
+          );
+        }),
       ],
       onChanged: (value) => setState(() => _formData[key] = value),
+      onSaved: (value) => _formData[key] = value,
       // validator: (value) => (required && (value == null || value.isEmpty))
       //     ? 'Please select a $label'
       //     : null,
-      onSaved: (value) => _formData[key] = value ?? null,
     );
   }
 
