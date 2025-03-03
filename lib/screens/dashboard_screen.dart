@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pharmacy_flutter/constants/color.dart';
 import 'package:pharmacy_flutter/screens/add_medition_screen.dart';
 import 'package:pharmacy_flutter/screens/login_screen.dart';
+import 'package:pharmacy_flutter/screens/scanner_screen.dart';
 import 'package:pharmacy_flutter/screens/view_medicine_screen.dart';
 import 'package:pharmacy_flutter/services/medicine_service.dart';
 import 'package:pharmacy_flutter/widgets/heading_text.dart';
@@ -51,6 +52,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 )));
   }
 
+  void _navigateToScannerScreen() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (ctx) => ScannerScreen()));
+  }
+
   void _logout() async {
     final SharedPreferences localStorage =
         await SharedPreferences.getInstance();
@@ -77,6 +83,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               icon: Icon(Icons.local_pharmacy_outlined),
               onPressed: () {
                 _navigateToAddMedicinePage();
+              },
+            ),
+          ),
+          Tooltip(
+            message: "Scanner",
+            child: IconButton(
+              icon: Icon(Icons.qr_code_scanner_outlined),
+              onPressed: () {
+                _navigateToScannerScreen();
               },
             ),
           ),
